@@ -1,0 +1,67 @@
+﻿@{
+    ViewData["Title"] = "New order";
+}
+
+<h2><b>Create your order</b></h2>
+
+<form id = "orderForm">
+    <label for="productId">GPU model:</label>
+    <select id="productId" name="ProductId" required>
+        <option value="" disabled selected>Select a GPU model sosal?</option>
+    </select>
+    <br/>
+
+    <label for="userName">User Name:</label>
+    <input type="text" id="userName" name="UserName" required  placeholder="Externus" size = "75" autocomplete="off"/>
+    <br/>
+
+    <button type="submit">Send order</button>
+</form>
+<label id="SuccessStatus"></label>
+
+<script>
+    document.getElementById("orderForm").addEventListener("submit", async function(event) {
+        event.preventDefault();
+        
+        const order = {
+            ProductId: document.getElementById("productId").value,
+            GpuName: document.getElementById("productId").selectedOptions[0].textContent,
+            UserName: document.getElementById("userName").value,
+            OrderDate: Date.now().toString()
+        };
+
+        const response = await fetch("/api/order", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(order)
+        });
+
+        if (response.ok) {
+            const orderId = await response.text();
+            document.getElementById("SuccessStatus").innerHTML = `<b>Order ${orderId} sent successfully.</b>`;
+        } else {
+            const errorData = await response.text();
+            document.getElementById("SuccessStatus").innerHTML = `<b>Error: ${errorData}</b>`;
+        }
+    });
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', async function() {
+        const response = await fetch("http://localhost:59291/api/Gpu");
+        if (response.ok) {
+            const gpuModels = await response.json();
+            
+            const selectField = document.getElementById("productId");
+            
+            gpuModels.forEach(gpu => {
+                const option = document.createElement("option");
+                option.value = gpu.id;
+                option.textContent = gpu.name;
+                selectField.appendChild(option);
+            });
+        } else {
+            console.error("Failed to fetch GPU models");
+        }
+    });
+</script>

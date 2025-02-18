@@ -13,7 +13,7 @@ public class ServerOrderConfirmationProducer
     {
         var config = new ProducerConfig
         {
-            BootstrapServers = "localhost:9092",
+            BootstrapServers = "localhost:29092",
         };
         _producer = new ProducerBuilder<string, string>(config).Build();
     }
@@ -25,9 +25,7 @@ public class ServerOrderConfirmationProducer
             Key = orderConfirmation.OrderId,
             Value = JsonSerializer.Serialize(orderConfirmation)
         };
-        
         await _producer.ProduceAsync(TopicName, message);
-        
-        //TODO: Добавить обновление флага isconfirmed
+        Console.WriteLine("[Back-Client] OrderConfirmation send to Kafka...");
     }
 }

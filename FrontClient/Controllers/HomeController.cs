@@ -1,4 +1,3 @@
-
 using Microsoft.AspNetCore.Mvc;
 namespace ServicesManipulation.Controllers;
 
@@ -16,7 +15,7 @@ public class HomeController : Controller
         return View();
     }
 
-    public IActionResult Privacy()
+    public IActionResult OrderCreate()
     {
         return View();
     }
