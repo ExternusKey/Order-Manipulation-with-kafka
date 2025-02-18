@@ -12,7 +12,7 @@ public class OrderConfirmation
     public string UserName {get; set; }
 
     public string ProcessedBy {get; set; }
-    public DateTime ConfirmedAt { get; set; } = DateTime.UtcNow;
+    public string ConfirmedAt { get; set; }
     
 }
 

@@ -7,4 +7,5 @@ public class AppDbContext : DbContext
 {
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
     public DbSet<OrderConfirmation> ConfirmedOrders { get; set; }
+    public DbSet<OrderRequest> OrderRequests { get; set; }
 }

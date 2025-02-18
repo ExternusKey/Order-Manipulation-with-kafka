@@ -1,5 +1,6 @@
 ﻿using System.Text.Json;
 using Confluent.Kafka;
+using DbClientService.Data;
 using DbClientService.Models;
 
 namespace DbClientService.Messaging;
@@ -13,7 +14,7 @@ public class ServerOrderConfirmationProducer
     {
         var config = new ProducerConfig
         {
-            BootstrapServers = "localhost:9092",
+            BootstrapServers = "localhost:29092",
         };
         _producer = new ProducerBuilder<string, string>(config).Build();
     }
@@ -27,7 +28,6 @@ public class ServerOrderConfirmationProducer
         };
         
         await _producer.ProduceAsync(TopicName, message);
-        
-        //TODO: Добавить обновление флага isconfirmed
+        Console.WriteLine("[Back-Client] OrderConfirmation send to Kafka...");
     }
 }

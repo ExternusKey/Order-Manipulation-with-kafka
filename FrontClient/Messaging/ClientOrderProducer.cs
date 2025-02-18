@@ -13,7 +13,7 @@ public class ClientOrderProducer
     {
         var config = new ProducerConfig
         {
-            BootstrapServers = "localhost:9092",
+            BootstrapServers = "localhost:29092",
         };
         
         _producer = new ProducerBuilder<string, string>(config).Build();
@@ -30,6 +30,7 @@ public class ClientOrderProducer
         try
         {
             await _producer.ProduceAsync(TopicName, message);
+            Console.WriteLine($"[Web-Client] New order send to kafka : {message.Key} в {TopicName}");
         }
         catch (ProduceException<string, string> e)
         {

@@ -11,6 +11,6 @@ public class OrderRequest
     [Required]
     public string UserName { get; set; }
 
-    public DateTime OrderDate { get; set; } = DateTime.Now;
+    public string OrderDate { get; set; }
     
 }
