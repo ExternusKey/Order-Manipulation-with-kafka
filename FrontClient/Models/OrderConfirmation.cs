@@ -2,7 +2,7 @@
 
 namespace ServicesManipulation.Models;
 
-public class Confirmation
+public class OrderConfirmation
 {
     [Key]
     public string OrderId { get; set; }

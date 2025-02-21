@@ -3,9 +3,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DbClientService.Data;
 
-public class AppDbContext : DbContext
+public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
 {
-    public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
     public DbSet<OrderConfirmation> ConfirmedOrders { get; set; }
     public DbSet<OrderRequest> OrderRequests { get; set; }
 }

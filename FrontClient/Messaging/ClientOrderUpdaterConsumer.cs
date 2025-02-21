@@ -31,7 +31,7 @@ public class ClientOrderUpdaterConsumer : BackgroundService
             while (!cancellationToken.IsCancellationRequested)
             {
                 var consumeResult = await Task.Run(() => _consumer.Consume(cancellationToken), cancellationToken);
-                var confirmatedOrder = JsonSerializer.Deserialize<Confirmation>(consumeResult.Message.Value);
+                var confirmatedOrder = JsonSerializer.Deserialize<OrderConfirmation>(consumeResult.Message.Value);
                 if (confirmatedOrder == null)
                     continue;
 
@@ -45,7 +45,7 @@ public class ClientOrderUpdaterConsumer : BackgroundService
         }
     }
 
-    private async Task SendConfirmedOrderToUser(Confirmation confirmedOrder)
+    private async Task SendConfirmedOrderToUser(OrderConfirmation confirmedOrder)
     {
         using var scope = _scopeFactory.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();

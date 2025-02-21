@@ -1,7 +1,44 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Создание заказа";
 }
 
-<div class="text-center">
-    <h1 class="display-4">@ViewBag.Message</h1>
-</div>
+<h2><b>Create your order</b></h2>
+
+<form id = "orderForm">
+    <label for="productId">Product ID:</label>
+    <input type="text" id="productId" name="ProductId" required placeholder="Nvidia GeForce GTX 1080" size = "75" autocomplete="off"/>
+    <br/>
+
+    <label for="userName">User Name:</label>
+    <input type="text" id="userName" name="UserName" required  placeholder="Externus" size = "75" autocomplete="off"/>
+    <br/>
+
+    <button type="submit">Send order</button>
+</form>
+<label id="SuccessStatus"></label>
+
+<script>
+    document.getElementById("orderForm").addEventListener("submit", async function(event) {
+        event.preventDefault();
+        
+        const order = {
+            ProductId: document.getElementById("productId").value,
+            UserName: document.getElementById("userName").value,
+            OrderDate: Date.now().toString()
+        };
+
+        const response = await fetch("/api/order", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(order)
+        });
+
+        if (response.ok) {
+            const orderId = await response.text();
+            document.getElementById("SuccessStatus").innerHTML = `<b>Order ${orderId} sent successfully.</b>`;
+        } else {
+            const errorData = await response.text();
+            document.getElementById("SuccessStatus").innerHTML = `<b>Error: ${errorData}</b>`;
+        }
+    });
+</script>
