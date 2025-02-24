@@ -3,11 +3,13 @@ using ServicesManipulation.Models;
 
 namespace ServicesManipulation.Data;
 
-public class GpuModelService(HttpClient httpClient)
+public class GpuModelService(IHttpClientFactory httpClientFactory)
 {
+    private readonly HttpClient _httpClient = httpClientFactory.CreateClient("ApiClient");
     public async Task<List<GpuModel>?> GetGpuModels()
     {
-        var response = await httpClient.GetAsync("api/Gpu");
+        
+        var response = await _httpClient.GetAsync("api/Gpu");
 
         if (!response.IsSuccessStatusCode) return [];
         

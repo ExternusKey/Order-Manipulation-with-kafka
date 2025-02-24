@@ -1,17 +1,18 @@
-using ServicesManipulation.Controllers;
-using ServicesManipulation.Data;
 using ServicesManipulation.Messaging;
-using ServicesManipulation.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddHostedService<ClientOrderUpdaterConsumer>();
-builder.Services.AddSingleton<ConfirmationController>();
-builder.Services.AddHttpClient<GpuModelService>(httpClient => httpClient.BaseAddress = new Uri("http://localhost:59291"));
+
+builder.Services.AddHttpClient("ApiClient", httpClient =>
+{
+    httpClient.BaseAddress = new Uri("https://localhost:44301");
+});
 
 var app = builder.Build();
 
+app.MapControllers();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");

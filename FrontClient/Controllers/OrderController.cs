@@ -20,7 +20,7 @@ public class OrderController : Controller
     {
         try
         {
-            request.OrderDate = DateTime.Now.ToString("MM/dd/yyyy");
+            request.OrderDate = DateTime.Now.ToString("dd/MM/yyyy");
             var orderId = await _clientOrderProducer.SendOrderAsync(request);
             if (orderId != null)
                 return Ok(orderId);

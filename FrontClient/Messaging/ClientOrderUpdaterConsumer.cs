@@ -1,7 +1,6 @@
-﻿using System.Text.Json;
+﻿using System.Text;
+using System.Text.Json;
 using Confluent.Kafka;
-using Microsoft.AspNetCore.Mvc;
-using ServicesManipulation.Controllers;
 using ServicesManipulation.Models;
 
 namespace ServicesManipulation.Messaging;
@@ -10,11 +9,11 @@ public class ClientOrderUpdaterConsumer : BackgroundService
 {
     private const string TopicName = "ConfirmationQueue";
     private readonly IConsumer<string, string> _consumer;
-    private readonly ConfirmationController _confirmationController;
+    private readonly IHttpClientFactory _httpClientFactory;
 
-    public ClientOrderUpdaterConsumer(ConfirmationController confirmationController)
+    public ClientOrderUpdaterConsumer(IHttpClientFactory httpClientFactory)
     {
-        _confirmationController = confirmationController;
+        _httpClientFactory = httpClientFactory;
         var config = new ConsumerConfig
         {
             BootstrapServers = "localhost:29092",
@@ -36,19 +35,18 @@ public class ClientOrderUpdaterConsumer : BackgroundService
                 if (confirmatedOrder == null)
                     continue;
                 
-                var result = await _confirmationController.SendOrderConfirmationToDbAsync(confirmatedOrder);
-                if (result is ObjectResult objectResult && objectResult.StatusCode == 500)
-                {
+                using var client = _httpClientFactory.CreateClient();
+                var content = new StringContent(JsonSerializer.Serialize(confirmatedOrder), Encoding.UTF8, "application/json");
 
-                    var errorDetails = objectResult.Value as dynamic;
-                    var errorMessage = errorDetails?.message;
-                    var errorDetailsMessage = errorDetails?.details;
-                    
-                    Console.WriteLine($"[Web-Client] Error: {errorMessage}, Details: {errorDetailsMessage}");
+                var response = await client.PostAsync("https://localhost:44301/api/Confirmation", content, cancellationToken);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errorDetails = await response.Content.ReadAsStringAsync(cancellationToken);
+                    Console.WriteLine($"[Web-Client] Error: {response.StatusCode}, Details: {errorDetails}");
                 }
                 else
                     Console.WriteLine($"[Web-Client] Order confirmed: {confirmatedOrder.OrderId} ");
-
             }
         }
         catch (Exception e)
@@ -56,6 +54,4 @@ public class ClientOrderUpdaterConsumer : BackgroundService
             Console.WriteLine($"[Web-Client] Cancellation requested. Error: {e.Message}");
         }
     }
-
-
 }

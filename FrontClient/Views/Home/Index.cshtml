@@ -25,6 +25,7 @@
         
         const order = {
             ProductId: document.getElementById("productId").value,
+            GpuName: document.getElementById("productId").selectedOptions[0].textContent,
             UserName: document.getElementById("userName").value,
             OrderDate: Date.now().toString()
         };
@@ -54,7 +55,6 @@
             const selectField = document.getElementById("productId");
             
             gpuModels.forEach(gpu => {
-                console.log(gpu)
                 const option = document.createElement("option");
                 option.value = gpu.id;
                 option.textContent = gpu.name;

@@ -54,6 +54,7 @@ public class ServerOrderConsumer : BackgroundService
                     {
                         OrderId = order.OrderId,
                         ProductId = order.ProductId,
+                        GpuName = order.GpuName,
                         UserName = order.UserName,
                         ProcessedBy = "Back-Client",
                         ConfirmedAt = order.OrderDate,

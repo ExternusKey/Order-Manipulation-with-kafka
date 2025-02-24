@@ -13,16 +13,13 @@ public class ConfirmationController(IServiceScopeFactory scopeFactory) : Control
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
-
         
         try
         {
             using var scope = scopeFactory.CreateScope();
             var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-            
             dbContext.ConfirmedOrders.Add(orderConfirmation);
             await dbContext.SaveChangesAsync();
-            
             return Ok();
         }
         catch (Exception ex)

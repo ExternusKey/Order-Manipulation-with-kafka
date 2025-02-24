@@ -16,6 +16,11 @@ public class OrderConfirmation
     [Column("product_id")]
     public string ProductId { get; set; }
     
+    [Display(Name = "GPU Name")]
+    [Column("gpu_name")]
+    [Required]
+    public string GpuName { get; set; }
+    
     [Required]
     [Display(Name = "UserName")]
     [Column("user_name")]

@@ -16,6 +16,11 @@ public class OrderRequest
     [Required]
     public string ProductId { get; set; }
     
+    [Display(Name = "GPU Name")]
+    [Column("gpu_name")]
+    [Required]
+    public string GpuName { get; set; }
+    
     [Display(Name = "User Name")]
     [Column("user_name")]
     [Required]
