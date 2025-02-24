@@ -5,8 +5,10 @@
 <h2><b>Create your order</b></h2>
 
 <form id = "orderForm">
-    <label for="productId">Product ID:</label>
-    <input type="text" id="productId" name="ProductId" required placeholder="Nvidia GeForce GTX 1080" size = "75" autocomplete="off"/>
+    <label for="productId">GPU model:</label>
+    <select id="productId" name="ProductId" required>
+        <option value="" disabled selected>Select a GPU model</option>
+    </select>
     <br/>
 
     <label for="userName">User Name:</label>
@@ -39,6 +41,27 @@
         } else {
             const errorData = await response.text();
             document.getElementById("SuccessStatus").innerHTML = `<b>Error: ${errorData}</b>`;
+        }
+    });
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', async function() {
+        const response = await fetch("http://localhost:59291/api/Gpu");
+        if (response.ok) {
+            const gpuModels = await response.json();
+            
+            const selectField = document.getElementById("productId");
+            
+            gpuModels.forEach(gpu => {
+                console.log(gpu)
+                const option = document.createElement("option");
+                option.value = gpu.id;
+                option.textContent = gpu.name;
+                selectField.appendChild(option);
+            });
+        } else {
+            console.error("Failed to fetch GPU models");
         }
     });
 </script>

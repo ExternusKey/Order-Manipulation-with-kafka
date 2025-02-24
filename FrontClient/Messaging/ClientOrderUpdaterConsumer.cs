@@ -1,19 +1,20 @@
 ﻿using System.Text.Json;
 using Confluent.Kafka;
-using ServicesManipulation.Data;
+using Microsoft.AspNetCore.Mvc;
+using ServicesManipulation.Controllers;
 using ServicesManipulation.Models;
 
 namespace ServicesManipulation.Messaging;
 
 public class ClientOrderUpdaterConsumer : BackgroundService
 {
-    private readonly IServiceScopeFactory _scopeFactory;
     private const string TopicName = "ConfirmationQueue";
     private readonly IConsumer<string, string> _consumer;
+    private readonly ConfirmationController _confirmationController;
 
-    public ClientOrderUpdaterConsumer(IServiceScopeFactory scopeFactory)
+    public ClientOrderUpdaterConsumer(ConfirmationController confirmationController)
     {
-        _scopeFactory = scopeFactory;
+        _confirmationController = confirmationController;
         var config = new ConsumerConfig
         {
             BootstrapServers = "localhost:29092",
@@ -34,9 +35,20 @@ public class ClientOrderUpdaterConsumer : BackgroundService
                 var confirmatedOrder = JsonSerializer.Deserialize<OrderConfirmation>(consumeResult.Message.Value);
                 if (confirmatedOrder == null)
                     continue;
+                
+                var result = await _confirmationController.SendOrderConfirmationToDbAsync(confirmatedOrder);
+                if (result is ObjectResult objectResult && objectResult.StatusCode == 500)
+                {
 
-                await SendConfirmedOrderToUser(confirmatedOrder);
-                Console.WriteLine($"[Web-Client] Order confirmed: {confirmatedOrder.OrderId} ");
+                    var errorDetails = objectResult.Value as dynamic;
+                    var errorMessage = errorDetails?.message;
+                    var errorDetailsMessage = errorDetails?.details;
+                    
+                    Console.WriteLine($"[Web-Client] Error: {errorMessage}, Details: {errorDetailsMessage}");
+                }
+                else
+                    Console.WriteLine($"[Web-Client] Order confirmed: {confirmatedOrder.OrderId} ");
+
             }
         }
         catch (Exception e)
@@ -45,12 +57,5 @@ public class ClientOrderUpdaterConsumer : BackgroundService
         }
     }
 
-    private async Task SendConfirmedOrderToUser(OrderConfirmation confirmedOrder)
-    {
-        using var scope = _scopeFactory.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        Console.WriteLine($"[Web-Client] Order confirmed: {confirmedOrder.OrderId}");
-        dbContext.Add(confirmedOrder);
-        await dbContext.SaveChangesAsync();
-    }
+
 }

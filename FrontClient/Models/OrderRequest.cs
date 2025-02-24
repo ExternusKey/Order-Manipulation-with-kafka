@@ -1,16 +1,13 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ServicesManipulation.Models;
 
-public class OrderRequest
+[Table("order_request")]
+public class OrderRequest()
 {
-    [Key]
-    public string? OrderId { get;} = Guid.NewGuid().ToString();
-    [Required]
+    public string OrderId { get; set; } = Guid.NewGuid().ToString();
     public string ProductId { get; set; }
-    [Required]
     public string UserName { get; set; }
-    
     public string OrderDate { get; set; }
-    
 }

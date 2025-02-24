@@ -1,6 +1,5 @@
 ﻿using System.Text.Json;
 using Confluent.Kafka;
-using DbClientService.Data;
 using DbClientService.Models;
 
 namespace DbClientService.Messaging;
