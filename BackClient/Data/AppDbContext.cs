@@ -1,5 +1,4 @@
-﻿
-using DbClientService.Models;
+﻿using DbClientService.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace DbClientService.Data;

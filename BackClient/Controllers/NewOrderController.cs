@@ -8,6 +8,7 @@ namespace DbClientService.Controllers;
 [Route("api/[controller]")]
 public class NewOrderController(IServiceScopeFactory scopeFactory) : ControllerBase
 {
+    
     [HttpPost]
     public async Task<IActionResult> PostNewOrderData([FromBody] OrderRequest orderRequest)
     {
