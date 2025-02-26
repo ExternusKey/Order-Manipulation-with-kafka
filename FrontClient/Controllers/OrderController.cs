@@ -10,11 +10,6 @@ public class OrderController : Controller
 {
     private readonly ClientOrderProducer _clientOrderProducer = new();
 
-    public IActionResult Index()
-    {
-        return View("~/Views/Home/Index.cshtml");
-    }
-
     [HttpPost]
     public async Task<IActionResult> PostAsync([FromBody] OrderRequest request)
     {

@@ -12,10 +12,10 @@ builder.Services.AddHttpClient("ApiClient", httpClient =>
 
 var app = builder.Build();
 
-app.MapControllers();
+app.MapControllers();   
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+    pattern: "{controller=Home}/{action=OrderCreate}/{id?}");
 
 await app.RunAsync();
 
