@@ -1,6 +1,5 @@
 ﻿using System.Text.Json;
 using Confluent.Kafka;
-using DbClientService.Data;
 using DbClientService.Models;
 
 namespace DbClientService.Messaging;
@@ -26,7 +25,6 @@ public class ServerOrderConfirmationProducer
             Key = orderConfirmation.OrderId,
             Value = JsonSerializer.Serialize(orderConfirmation)
         };
-        
         await _producer.ProduceAsync(TopicName, message);
         Console.WriteLine("[Back-Client] OrderConfirmation send to Kafka...");
     }

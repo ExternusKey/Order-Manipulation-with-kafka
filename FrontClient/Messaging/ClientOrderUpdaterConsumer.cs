@@ -1,19 +1,19 @@
-﻿using System.Text.Json;
+﻿using System.Text;
+using System.Text.Json;
 using Confluent.Kafka;
-using ServicesManipulation.Data;
 using ServicesManipulation.Models;
 
 namespace ServicesManipulation.Messaging;
 
 public class ClientOrderUpdaterConsumer : BackgroundService
 {
-    private readonly IServiceScopeFactory _scopeFactory;
     private const string TopicName = "ConfirmationQueue";
     private readonly IConsumer<string, string> _consumer;
+    private readonly IHttpClientFactory _httpClientFactory;
 
-    public ClientOrderUpdaterConsumer(IServiceScopeFactory scopeFactory)
+    public ClientOrderUpdaterConsumer(IHttpClientFactory httpClientFactory)
     {
-        _scopeFactory = scopeFactory;
+        _httpClientFactory = httpClientFactory;
         var config = new ConsumerConfig
         {
             BootstrapServers = "localhost:29092",
@@ -31,26 +31,27 @@ public class ClientOrderUpdaterConsumer : BackgroundService
             while (!cancellationToken.IsCancellationRequested)
             {
                 var consumeResult = await Task.Run(() => _consumer.Consume(cancellationToken), cancellationToken);
-                var confirmatedOrder = JsonSerializer.Deserialize<Confirmation>(consumeResult.Message.Value);
+                var confirmatedOrder = JsonSerializer.Deserialize<OrderConfirmation>(consumeResult.Message.Value);
                 if (confirmatedOrder == null)
                     continue;
+                
+                using var client = _httpClientFactory.CreateClient();
+                var content = new StringContent(JsonSerializer.Serialize(confirmatedOrder), Encoding.UTF8, "application/json");
 
-                await SendConfirmedOrderToUser(confirmatedOrder);
-                Console.WriteLine($"[Web-Client] Order confirmed: {confirmatedOrder.OrderId} ");
+                var response = await client.PostAsync("https://localhost:44301/api/Confirmation", content, cancellationToken);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errorDetails = await response.Content.ReadAsStringAsync(cancellationToken);
+                    Console.WriteLine($"[Web-Client] Error: {response.StatusCode}, Details: {errorDetails}");
+                }
+                else
+                    Console.WriteLine($"[Web-Client] Order confirmed: {confirmatedOrder.OrderId} ");
             }
         }
         catch (Exception e)
         {
             Console.WriteLine($"[Web-Client] Cancellation requested. Error: {e.Message}");
         }
-    }
-
-    private async Task SendConfirmedOrderToUser(Confirmation confirmedOrder)
-    {
-        using var scope = _scopeFactory.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        Console.WriteLine($"[Web-Client] Order confirmed: {confirmedOrder.OrderId}");
-        dbContext.Add(confirmedOrder);
-        await dbContext.SaveChangesAsync();
     }
 }

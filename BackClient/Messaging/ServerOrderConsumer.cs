@@ -1,19 +1,19 @@
 ﻿using System.Text.Json;
 using Confluent.Kafka;
-using DbClientService.Data;
+using DbClientService.Controllers;
 using DbClientService.Models;
+using Microsoft.AspNetCore.Mvc;
 
 namespace DbClientService.Messaging;
 
 public class ServerOrderConsumer : BackgroundService
 {
-    private readonly IServiceScopeFactory _scopeFactory;
     private const string TopicName = "OrderQueue";
     private readonly IConsumer<string, string> _consumer;
-
-    public ServerOrderConsumer(IServiceScopeFactory scopeFactory)
+    private readonly NewOrderController _newOrderController;
+    public ServerOrderConsumer(NewOrderController newOrderController)
     {
-        _scopeFactory = scopeFactory;
+        _newOrderController = newOrderController;
         var config = new ConsumerConfig
         {
             BootstrapServers = "localhost:29092",
@@ -40,12 +40,21 @@ public class ServerOrderConsumer : BackgroundService
                 Console.WriteLine($"[Back-Client] Order received: {order?.OrderId} for {order?.UserName}");
                 if (order != null)
                 {
-                    await SendOrderToDatabase(order);
-
+                    
+                    var response = await _newOrderController.PostNewOrderData(order);
+                    if (response is ObjectResult { StatusCode: 500 } objectResult)
+                    {
+                        var errorDetails = objectResult.Value as dynamic;
+                        var errorMessage = errorDetails?.message;
+                        var errorDetailsMessage = errorDetails?.details;
+                        
+                        Console.WriteLine($"[Back-Client] Error: {errorMessage}, Details: {errorDetailsMessage}");
+                    }
                     var confirmedOrder = new OrderConfirmation
                     {
                         OrderId = order.OrderId,
                         ProductId = order.ProductId,
+                        GpuName = order.GpuName,
                         UserName = order.UserName,
                         ProcessedBy = "Back-Client",
                         ConfirmedAt = order.OrderDate,
@@ -57,7 +66,6 @@ public class ServerOrderConsumer : BackgroundService
         }
         catch (OperationCanceledException e )
         {
-            // TODO: LOGGER
             Console.WriteLine($"[Back-Client] Cancellation requested. Error: {e.Message}");
         }
         finally
@@ -65,13 +73,4 @@ public class ServerOrderConsumer : BackgroundService
             _consumer.Close();
         }
     }
-
-    private async Task SendOrderToDatabase(OrderRequest order)
-    {
-        using var scope = _scopeFactory.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        dbContext.OrderRequests.Add(order);
-        await dbContext.SaveChangesAsync();
-    }
-
 }
